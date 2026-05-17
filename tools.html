@@ -334,6 +334,65 @@ input[type="range"]::-webkit-slider-thumb {
 }
 .compare-table tr:last-child td.diff { color: #16a34a; font-size: 0.95rem; }
 
+/* 解説ブロック */
+#reasonBox {
+  margin-bottom: 20px;
+}
+.reason-box-title {
+  font-size: 0.78rem;
+  letter-spacing: 0.15em;
+  color: var(--text-light);
+  font-family: var(--en);
+  font-style: italic;
+  margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.reason-box-title::before,
+.reason-box-title::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: rgba(26,39,68,0.1);
+}
+.reason-items {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.reason-item {
+  display: grid;
+  grid-template-columns: 20px 1fr auto;
+  align-items: start;
+  gap: 10px;
+  padding: 10px 14px;
+  background: var(--cream);
+  border-radius: 6px;
+  border-left: 3px solid var(--gold);
+}
+.reason-item__icon { font-size: 0.9rem; }
+.reason-item__body {}
+.reason-item__label {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 2px;
+}
+.reason-item__desc {
+  font-size: 0.76rem;
+  color: var(--text-light);
+  line-height: 1.5;
+}
+.reason-item__amount {
+  font-family: var(--en);
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: #16a34a;
+  white-space: nowrap;
+  padding-top: 1px;
+}
+
 .sim-note {
   font-size: 0.75rem;
   color: var(--text-light);
@@ -682,6 +741,9 @@ input[type="range"]::-webkit-slider-thumb {
             </thead>
             <tbody id="compareTableBody"></tbody>
           </table>
+          <!-- 解説ブロック -->
+          <div id="reasonBox"></div>
+
           <p class="sim-note">
             ※ 本シミュレーターは概算を示すものです。青色申告特別控除・経費最適化・小規模企業共済等の一般的な節税手法を適用した試算値です。実際の節税効果は個別の状況により異なります。正確な試算は無料相談にてご確認ください。
           </p>
@@ -1042,6 +1104,86 @@ function runSimulation() {
 
   // Update banner
   document.getElementById('savingsAmount').textContent = savingsMan.toLocaleString();
+
+  // 解説ブロック生成
+  const reasonItems = [];
+  if (entityType === 'individual') {
+    const income_now2 = revenue - expenses;
+    const addExp2 = Math.min(expenses * 0.08, income_now2 * 0.15);
+    const kyosai2 = Math.min(840000, income_now2 * 0.10);
+    const kojo_total = 650000 + kyosai2 + addExp2;
+    const tax_effect = Math.round((nowTotal - afterTotal) * 0.4 / 10000); // 控除効果のうち所得税分概算
+
+    reasonItems.push({
+      icon: '📋',
+      label: '青色申告特別控除（65万円）',
+      desc: '複式帳簿を付けることで所得から65万円を控除。顧問税理士がいれば確実に適用できます。',
+      amount: Math.round(650000 * 0.3 / 10000) + '万円の節税効果'
+    });
+    if (addExp2 > 0) {
+      reasonItems.push({
+        icon: '💼',
+        label: `経費の適正計上（約${Math.round(addExp2/10000)}万円の追加計上）`,
+        desc: '在宅勤務費・接待交際費・車両費・保険料など、見落とされがちな経費を専門家が精査します。',
+        amount: Math.round(addExp2 * 0.3 / 10000) + '万円の節税効果'
+      });
+    }
+    if (kyosai2 > 0) {
+      reasonItems.push({
+        icon: '🏦',
+        label: `小規模企業共済（年間${Math.round(kyosai2/10000)}万円の掛金）`,
+        desc: '事業主の退職金制度。掛金が全額所得控除になり、将来の備えと節税を両立できます。',
+        amount: Math.round(kyosai2 * 0.3 / 10000) + '万円の節税効果'
+      });
+    }
+    if (spouseCount > 0) {
+      reasonItems.push({
+        icon: '👫',
+        label: '配偶者控除（38万円）の確実な適用',
+        desc: '配偶者の収入要件を満たしているか確認し、適切な控除を漏れなく申告します。',
+        amount: Math.round(380000 * 0.2 / 10000) + '万円の節税効果'
+      });
+    }
+  } else {
+    const profit_now_c2 = revenue - expenses;
+    const addExp_c2 = Math.min(expenses * 0.07, profit_now_c2 * 0.12);
+    reasonItems.push({
+      icon: '💰',
+      label: '役員報酬の最適化',
+      desc: '会社利益と個人所得のバランスを調整し、法人税と所得税の合計が最小になる役員報酬額を設計します。',
+      amount: '試算に含む'
+    });
+    if (addExp_c2 > 0) {
+      reasonItems.push({
+        icon: '💼',
+        label: `経費の適正計上（約${Math.round(addExp_c2/10000)}万円の追加計上）`,
+        desc: '交際費・出張費・福利厚生費など、法人として計上可能な経費を専門家が精査します。',
+        amount: Math.round(addExp_c2 * 0.23 / 10000) + '万円の節税効果'
+      });
+    }
+    reasonItems.push({
+      icon: '📊',
+      label: '中小法人の軽減税率（800万円以下15%）の確実な適用',
+      desc: '課税所得800万円以下の部分は法人税率が15%に下がります。期末の利益コントロールで最大限活用します。',
+      amount: '試算に含む'
+    });
+  }
+
+  document.getElementById('reasonBox').innerHTML = `
+    <p class="reason-box-title">この節税効果の根拠</p>
+    <div class="reason-items">
+      ${reasonItems.map(r => `
+        <div class="reason-item">
+          <span class="reason-item__icon">${r.icon}</span>
+          <div class="reason-item__body">
+            <div class="reason-item__label">${r.label}</div>
+            <div class="reason-item__desc">${r.desc}</div>
+          </div>
+          <span class="reason-item__amount">${r.amount}</span>
+        </div>
+      `).join('')}
+    </div>
+  `;
 
   // Update table
   const tbody = document.getElementById('compareTableBody');
