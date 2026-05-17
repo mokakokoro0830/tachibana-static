@@ -678,6 +678,72 @@ a { color: inherit; text-decoration: none; }
   padding: 100px 0;
   background: var(--cream);
 }
+/* FAQ 検索 */
+.faq__search-wrap {
+  max-width: 800px;
+  margin: 0 auto 32px;
+}
+.faq__search-box {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: var(--white);
+  border: 2px solid rgba(26,39,68,0.15);
+  border-radius: 50px;
+  padding: 10px 20px;
+  transition: border-color 0.2s;
+}
+.faq__search-box:focus-within {
+  border-color: var(--gold);
+  box-shadow: 0 0 0 4px rgba(184,150,12,0.08);
+}
+.faq__search-icon { font-size: 1rem; flex-shrink: 0; opacity: 0.5; }
+.faq__search-input {
+  flex: 1;
+  border: none;
+  outline: none;
+  font-family: var(--sans);
+  font-size: 0.92rem;
+  color: var(--text);
+  background: transparent;
+}
+.faq__search-input::placeholder { color: rgba(26,39,68,0.3); }
+.faq__search-clear {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  color: var(--text-light);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+  padding: 2px 6px;
+  border-radius: 50%;
+}
+.faq__search-clear.visible { opacity: 0.6; pointer-events: auto; }
+.faq__search-clear:hover { opacity: 1; background: var(--cream-dark); }
+.faq__search-hint {
+  font-size: 0.8rem;
+  color: var(--text-light);
+  margin-top: 10px;
+  padding-left: 16px;
+  min-height: 20px;
+  transition: opacity 0.2s;
+}
+/* マッチ文字のハイライト */
+.faq__item mark {
+  background: rgba(184,150,12,0.18);
+  color: var(--navy);
+  border-radius: 2px;
+  padding: 0 1px;
+}
+/* 非マッチ時は非表示 */
+.faq__item.hidden {
+  display: none;
+}
+/* 検索中はアコーディオンを自動展開 */
+.faq__item.searching { }
+
 .faq__list {
   max-width: 800px;
   margin: 0 auto;

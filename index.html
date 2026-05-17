@@ -361,7 +361,23 @@
       <p class="kicker">FAQ</p>
       <h2 class="section-title">よくある質問</h2>
     </div>
-    <div class="faq__list">
+    <!-- FAQ 検索 -->
+    <div class="faq__search-wrap">
+      <div class="faq__search-box">
+        <span class="faq__search-icon">🔍</span>
+        <input
+          type="text"
+          id="faqSearch"
+          class="faq__search-input"
+          placeholder="キーワードで検索（例：料金、リモート、相続…）"
+          autocomplete="off"
+        >
+        <button class="faq__search-clear" id="faqClear" aria-label="クリア">✕</button>
+      </div>
+      <p class="faq__search-hint" id="faqHint"></p>
+    </div>
+
+    <div class="faq__list" id="faqList">
 
       <details class="faq__item">
         <summary class="faq__question">相談は本当に無料ですか？</summary>
@@ -565,6 +581,86 @@ const observer = new IntersectionObserver((entries) => {
   });
 }, { threshold: 0.1 });
 revealEls.forEach(el => observer.observe(el));
+
+// ===== FAQ 検索 =====
+(function() {
+  const input = document.getElementById('faqSearch');
+  const clearBtn = document.getElementById('faqClear');
+  const hint = document.getElementById('faqHint');
+  const items = document.querySelectorAll('#faqList .faq__item');
+
+  // 各アイテムの元テキストを保存
+  items.forEach(item => {
+    const q = item.querySelector('.faq__question');
+    const a = item.querySelector('.faq__answer p');
+    item.dataset.origQ = q.textContent;
+    item.dataset.origA = a ? a.textContent : '';
+  });
+
+  function highlight(text, keyword) {
+    if (!keyword) return text;
+    const escaped = keyword.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    return text.replace(new RegExp(`(${escaped})`, 'gi'), '<mark>$1</mark>');
+  }
+
+  function search(keyword) {
+    const kw = keyword.trim();
+    let matchCount = 0;
+
+    items.forEach(item => {
+      const q = item.querySelector('.faq__question');
+      const a = item.querySelector('.faq__answer p');
+      const origQ = item.dataset.origQ;
+      const origA = item.dataset.origA;
+
+      if (!kw) {
+        // 検索なし：元のテキストに戻して全表示
+        q.textContent = origQ;
+        if (a) a.textContent = origA;
+        item.classList.remove('hidden');
+        item.removeAttribute('open');
+        matchCount++;
+      } else {
+        const matchQ = origQ.toLowerCase().includes(kw.toLowerCase());
+        const matchA = origA.toLowerCase().includes(kw.toLowerCase());
+
+        if (matchQ || matchA) {
+          item.classList.remove('hidden');
+          item.setAttribute('open', ''); // 検索中は展開
+          q.innerHTML = highlight(origQ, kw);
+          if (a) a.innerHTML = highlight(origA, kw);
+          matchCount++;
+        } else {
+          item.classList.add('hidden');
+          q.textContent = origQ;
+          if (a) a.textContent = origA;
+        }
+      }
+    });
+
+    // ヒント表示
+    if (!kw) {
+      hint.textContent = '';
+    } else if (matchCount === 0) {
+      hint.textContent = `「${kw}」に一致する質問はありませんでした。お気軽にお問い合わせください。`;
+      hint.style.color = '#dc2626';
+    } else {
+      hint.textContent = `${matchCount}件の質問が見つかりました`;
+      hint.style.color = 'var(--text-light)';
+    }
+
+    // クリアボタン表示切替
+    clearBtn.classList.toggle('visible', kw.length > 0);
+  }
+
+  input.addEventListener('input', () => search(input.value));
+
+  clearBtn.addEventListener('click', () => {
+    input.value = '';
+    search('');
+    input.focus();
+  });
+})();
 
 // Form submit
 document.getElementById('contactForm').addEventListener('submit', e => {
