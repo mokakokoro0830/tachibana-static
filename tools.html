@@ -1004,10 +1004,12 @@ function runSimulation() {
     nowTotal = shotokuzei_now + juminzei_now + jigyozei_now;
     nowDetail = { '所得税': shotokuzei_now, '住民税': juminzei_now, '事業税': jigyozei_now };
 
-    // 顧問後
-    const aokiro = 650000;
-    const addExpense = expenses * 0.12;
-    const kyosai = Math.min(840000, income_now * 0.08);
+    // 顧問後: 節税効果は「利益の一定割合」に上限を設ける（現実的な上限: 利益の30%）
+    const aokiro = 650000; // 青色申告特別控除
+    // 追加経費最適化: 利益の15%まで（経費の12%ではなく利益ベースで上限設定）
+    const addExpense = Math.min(expenses * 0.08, income_now * 0.15);
+    // 小規模企業共済: 月7万上限、ただし利益の10%まで
+    const kyosai = Math.min(840000, income_now * 0.10);
     const income_after = revenue - expenses - addExpense;
     const taxable_after = Math.max(0, income_after - kisoKojo - spouseKojo - fuyo - aokiro - kyosai);
     const shotokuzei_after = calcIncomeTax(taxable_after);
@@ -1024,10 +1026,11 @@ function runSimulation() {
     nowTotal = corptax_now + juminwarari_now;
     nowDetail = { '法人税': corptax_now, '法人住民税': juminwarari_now };
 
-    // 顧問後: 役員報酬最適化・経費追加計上
-    const addExpense_c = expenses * 0.10;
-    const yakuinHoshu = Math.min(revenue * 0.25, 8000000); // 役員報酬
-    const profit_after = Math.max(0, revenue - expenses - addExpense_c - yakuinHoshu * 0.3);
+    // 顧問後: 役員報酬最適化・経費追加計上（利益ベースで上限設定）
+    const profit_now_c = revenue - expenses;
+    const addExpense_c = Math.min(expenses * 0.07, profit_now_c * 0.12); // 利益の12%まで
+    const yakuinHoshu = Math.min(revenue * 0.20, 8000000); // 役員報酬最適化
+    const profit_after = Math.max(0, revenue - expenses - addExpense_c - yakuinHoshu * 0.25);
     const corptax_after = calcCorpTax(profit_after);
     const juminwarari_after = corptax_after * 0.207;
     afterTotal = corptax_after + juminwarari_after;
@@ -1068,7 +1071,7 @@ function runSimulation() {
     data: {
       labels: ['現在の税額', '顧問後の推定税額'],
       datasets: [{
-        data: [Math.round(nowTotal/10000), Math.round(afterTotal/10000)],
+        data: [Math.round(nowTotal/10000), Math.max(Math.round(afterTotal/10000), 1)],
         backgroundColor: ['rgba(26,39,68,0.7)', 'rgba(184,150,12,0.8)'],
         borderColor: ['rgb(26,39,68)', 'rgb(184,150,12)'],
         borderWidth: 2,
