@@ -281,13 +281,32 @@ input[type="range"]::-webkit-slider-thumb {
   position: relative;
 }
 .savings-banner__amount {
-  font-family: var(--en);
-  font-size: 3rem;
-  font-weight: 600;
-  color: var(--gold-light);
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 6px;
   position: relative;
 }
-.savings-banner__amount span { font-size: 1.2rem; margin-right: 4px; }
+.savings-banner__amount .amt-prefix {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  color: rgba(212,175,55,0.65);
+  font-weight: 400;
+}
+.savings-banner__amount .amt-num {
+  font-family: var(--en);
+  font-size: 4.5rem;
+  font-weight: 600;
+  color: var(--gold-light);
+  line-height: 1;
+}
+.savings-banner__amount .amt-unit {
+  font-family: var(--serif);
+  font-size: 2rem;
+  font-weight: 600;
+  color: var(--gold-light);
+  letter-spacing: 0.05em;
+}
 .savings-banner__sub {
   font-size: 0.82rem;
   color: rgba(255,255,255,0.5);
@@ -725,7 +744,11 @@ input[type="range"]::-webkit-slider-thumb {
           <!-- savings banner -->
           <div class="savings-banner" id="savingsBanner">
             <p class="savings-banner__label">推定年間節税効果</p>
-            <div class="savings-banner__amount"><span>約</span><span id="savingsAmount">0</span>万円</div>
+            <div class="savings-banner__amount">
+              <span class="amt-prefix">約</span>
+              <span class="amt-num" id="savingsAmount">0</span>
+              <span class="amt-unit">万円</span>
+            </div>
             <p class="savings-banner__sub">顧問契約後の試算値です</p>
           </div>
           <!-- chart -->
