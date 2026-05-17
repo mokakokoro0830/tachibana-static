@@ -1,0 +1,1190 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>無料ツール — 節税シミュレーター・顧問料見積もり | 橘総合税務会計事務所</title>
+<meta name="description" content="節税シミュレーターで今すぐ節税ポテンシャルを確認。顧問料見積もりウィザードで最適なプランをご提案します。">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+JP:wght@300;400;500;600;700&family=Noto+Sans+JP:wght@300;400;500&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<link rel="stylesheet" href="styles.css">
+<style>
+/* ===== TOOLS PAGE ===== */
+.tools-hero {
+  background: linear-gradient(135deg, #0F1A30 0%, #1A2744 60%, #253460 100%);
+  padding: 140px var(--px) 80px;
+  text-align: center;
+}
+.tools-hero__title {
+  font-family: var(--serif);
+  font-size: clamp(2rem, 4vw, 3rem);
+  font-weight: 600;
+  color: var(--white);
+  margin-bottom: 16px;
+}
+.tools-hero__desc {
+  font-size: 1rem;
+  color: rgba(255,255,255,0.7);
+  max-width: 540px;
+  margin: 0 auto;
+  line-height: 1.8;
+}
+
+/* ===== TAB ===== */
+.tab-nav {
+  display: flex;
+  justify-content: center;
+  gap: 0;
+  background: var(--cream);
+  border-bottom: 2px solid rgba(26,39,68,0.1);
+  position: sticky;
+  top: 64px;
+  z-index: 10;
+}
+.tab-btn {
+  padding: 18px 40px;
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  letter-spacing: 0.06em;
+  color: var(--text-light);
+  border: none;
+  background: none;
+  cursor: pointer;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -2px;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.tab-btn.active {
+  color: var(--navy);
+  border-bottom-color: var(--gold);
+  font-weight: 600;
+}
+.tab-btn:hover:not(.active) { color: var(--navy); background: rgba(0,0,0,0.03); }
+
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ===== SIMULATOR ===== */
+.simulator {
+  padding: 80px 0;
+  background: var(--cream);
+}
+.simulator__inner {
+  display: grid;
+  grid-template-columns: 420px 1fr;
+  gap: 48px;
+  align-items: start;
+}
+.sim-form {
+  background: var(--white);
+  border-radius: 8px;
+  padding: 36px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+}
+.sim-form__title {
+  font-family: var(--serif);
+  font-size: 1.1rem;
+  color: var(--navy);
+  font-weight: 600;
+  margin-bottom: 28px;
+  letter-spacing: 0.05em;
+  padding-bottom: 16px;
+  border-bottom: 1px solid var(--cream-dark);
+}
+
+/* Entity toggle */
+.entity-toggle {
+  display: flex;
+  border: 1px solid rgba(26,39,68,0.2);
+  border-radius: 6px;
+  overflow: hidden;
+  margin-bottom: 24px;
+}
+.entity-toggle label {
+  flex: 1;
+  text-align: center;
+  padding: 10px;
+  font-size: 0.88rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-light);
+  font-weight: 400;
+}
+.entity-toggle input[type="radio"] { display: none; }
+.entity-toggle input[type="radio"]:checked + span {
+  background: var(--navy);
+  color: var(--white);
+  display: block;
+}
+.entity-btn {
+  flex: 1;
+  padding: 10px;
+  font-size: 0.88rem;
+  font-family: var(--sans);
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-light);
+  background: none;
+  border: none;
+  letter-spacing: 0.04em;
+}
+.entity-btn.active {
+  background: var(--navy);
+  color: var(--white);
+}
+
+/* Slider input */
+.slider-group {
+  margin-bottom: 24px;
+}
+.slider-group__header {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 8px;
+}
+.slider-group__label {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  font-weight: 500;
+}
+.slider-group__value {
+  font-family: var(--en);
+  font-size: 1.2rem;
+  color: var(--navy);
+  font-weight: 600;
+}
+.slider-group__value span { font-size: 0.78rem; font-family: var(--sans); color: var(--text-light); margin-left: 2px; }
+
+input[type="range"] {
+  -webkit-appearance: none;
+  width: 100%;
+  height: 4px;
+  border-radius: 2px;
+  background: linear-gradient(to right, var(--gold) 0%, var(--gold) var(--pct, 30%), #ddd var(--pct, 30%), #ddd 100%);
+  outline: none;
+  cursor: pointer;
+}
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--gold);
+  border: 3px solid var(--white);
+  box-shadow: 0 1px 6px rgba(0,0,0,0.2);
+}
+
+/* Family */
+.family-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--cream-dark);
+}
+.family-row:last-child { border-bottom: none; }
+.family-row__label { font-size: 0.85rem; color: var(--text-light); }
+.counter {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.counter__btn {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  border: 1px solid rgba(26,39,68,0.25);
+  background: none;
+  font-size: 1rem;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--navy);
+  transition: all 0.15s;
+}
+.counter__btn:hover { background: var(--navy); color: var(--white); }
+.counter__val {
+  font-family: var(--en);
+  font-size: 1rem;
+  color: var(--navy);
+  font-weight: 600;
+  min-width: 24px;
+  text-align: center;
+}
+
+.sim-run-btn {
+  width: 100%;
+  margin-top: 28px;
+  padding: 16px;
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+  border-radius: 6px;
+  font-family: var(--serif);
+  font-size: 1rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.25s;
+}
+.sim-run-btn:hover { background: var(--gold); transform: translateY(-1px); }
+
+/* Result panel */
+.sim-result {
+  background: var(--white);
+  border-radius: 8px;
+  padding: 36px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+  min-height: 500px;
+}
+.sim-result__placeholder {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  color: var(--text-light);
+  font-size: 0.9rem;
+  padding: 60px 20px;
+  text-align: center;
+}
+.sim-result__placeholder-icon { font-size: 3rem; opacity: 0.4; }
+.sim-result__hidden { display: none; }
+.sim-result__shown { display: block; }
+
+.savings-banner {
+  background: linear-gradient(135deg, var(--navy) 0%, #253460 100%);
+  border-radius: 8px;
+  padding: 28px 32px;
+  margin-bottom: 28px;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+.savings-banner::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at 70% 50%, rgba(184,150,12,0.15) 0%, transparent 60%);
+}
+.savings-banner__label {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.6);
+  letter-spacing: 0.15em;
+  margin-bottom: 8px;
+  position: relative;
+}
+.savings-banner__amount {
+  font-family: var(--en);
+  font-size: 3rem;
+  font-weight: 600;
+  color: var(--gold-light);
+  position: relative;
+}
+.savings-banner__amount span { font-size: 1.2rem; margin-right: 4px; }
+.savings-banner__sub {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.5);
+  margin-top: 8px;
+  position: relative;
+}
+
+.chart-area {
+  height: 220px;
+  margin-bottom: 28px;
+}
+
+.compare-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.85rem;
+  margin-bottom: 24px;
+}
+.compare-table th {
+  background: var(--cream);
+  color: var(--text-light);
+  font-weight: 500;
+  padding: 10px 16px;
+  text-align: right;
+  font-size: 0.78rem;
+  letter-spacing: 0.05em;
+}
+.compare-table th:first-child { text-align: left; }
+.compare-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid var(--cream-dark);
+  text-align: right;
+  color: var(--text-light);
+}
+.compare-table td:first-child { text-align: left; color: var(--text); }
+.compare-table td.after { color: var(--navy); font-weight: 600; }
+.compare-table td.diff { color: #16a34a; font-weight: 600; }
+.compare-table tr:last-child td {
+  border-top: 2px solid var(--navy);
+  font-weight: 700;
+  color: var(--navy);
+  font-size: 0.95rem;
+  border-bottom: none;
+}
+.compare-table tr:last-child td.diff { color: #16a34a; font-size: 0.95rem; }
+
+.sim-note {
+  font-size: 0.75rem;
+  color: var(--text-light);
+  line-height: 1.7;
+  padding: 16px;
+  background: var(--cream);
+  border-radius: 4px;
+  margin-bottom: 20px;
+}
+.sim-cta {
+  text-align: center;
+}
+
+/* ===== WIZARD ===== */
+.wizard {
+  padding: 80px 0;
+  background: var(--cream);
+}
+.wizard__inner {
+  max-width: 680px;
+  margin: 0 auto;
+}
+.wizard-card {
+  background: var(--white);
+  border-radius: 8px;
+  box-shadow: 0 2px 20px rgba(0,0,0,0.06);
+  overflow: hidden;
+}
+
+/* Progress bar */
+.wizard-progress {
+  background: var(--cream-dark);
+  height: 4px;
+}
+.wizard-progress__fill {
+  height: 100%;
+  background: var(--gold);
+  transition: width 0.5s cubic-bezier(0.25, 0.1, 0.25, 1);
+}
+.wizard-header {
+  padding: 32px 40px 0;
+}
+.wizard-step-label {
+  font-family: var(--en);
+  font-style: italic;
+  font-size: 0.78rem;
+  letter-spacing: 0.2em;
+  color: var(--gold);
+  margin-bottom: 8px;
+}
+.wizard-title {
+  font-family: var(--serif);
+  font-size: 1.3rem;
+  font-weight: 600;
+  color: var(--navy);
+  letter-spacing: 0.04em;
+  margin-bottom: 6px;
+}
+.wizard-desc {
+  font-size: 0.85rem;
+  color: var(--text-light);
+}
+.wizard-body {
+  padding: 32px 40px;
+}
+.wizard-footer {
+  padding: 0 40px 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Option cards */
+.options-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+.options-grid--3 { grid-template-columns: repeat(3, 1fr); }
+.option-card {
+  border: 2px solid rgba(26,39,68,0.12);
+  border-radius: 8px;
+  padding: 20px 16px;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+  background: var(--white);
+}
+.option-card:hover { border-color: var(--gold); background: rgba(184,150,12,0.03); }
+.option-card.selected { border-color: var(--gold); background: rgba(184,150,12,0.06); }
+.option-card__icon { font-size: 2rem; margin-bottom: 10px; }
+.option-card__label {
+  font-family: var(--serif);
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--navy);
+  margin-bottom: 4px;
+}
+.option-card__sub { font-size: 0.78rem; color: var(--text-light); }
+
+/* Step indicators */
+.step-dots {
+  display: flex;
+  gap: 8px;
+}
+.step-dot {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--cream-dark);
+  transition: all 0.3s;
+}
+.step-dot.active { background: var(--gold); transform: scale(1.3); }
+.step-dot.done { background: var(--navy); }
+
+.btn-next, .btn-back {
+  padding: 12px 28px;
+  border-radius: 6px;
+  font-family: var(--serif);
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  letter-spacing: 0.04em;
+}
+.btn-next {
+  background: var(--navy);
+  color: var(--white);
+  border: none;
+}
+.btn-next:hover { background: var(--gold); }
+.btn-next:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-back {
+  background: none;
+  color: var(--text-light);
+  border: 1px solid rgba(26,39,68,0.2);
+}
+.btn-back:hover { border-color: var(--navy); color: var(--navy); }
+
+/* Result */
+.wizard-result { padding: 40px 40px 0; }
+.wizard-result__top {
+  text-align: center;
+  padding-bottom: 32px;
+  border-bottom: 1px solid var(--cream-dark);
+  margin-bottom: 32px;
+}
+.wizard-result__badge {
+  display: inline-block;
+  background: var(--cream);
+  color: var(--navy);
+  font-size: 0.78rem;
+  padding: 4px 14px;
+  border-radius: 20px;
+  letter-spacing: 0.1em;
+  margin-bottom: 20px;
+}
+.wizard-result__amount {
+  font-family: var(--en);
+  font-size: 3.5rem;
+  font-weight: 600;
+  color: var(--navy);
+  line-height: 1;
+  margin-bottom: 4px;
+}
+.wizard-result__amount-sub {
+  font-size: 0.85rem;
+  color: var(--text-light);
+  margin-bottom: 16px;
+}
+.wizard-result__breakdown {
+  margin-bottom: 32px;
+}
+.breakdown-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--cream-dark);
+  font-size: 0.87rem;
+}
+.breakdown-item:last-child { border-bottom: none; }
+.breakdown-item__label { color: var(--text-light); }
+.breakdown-item__value { font-weight: 600; color: var(--navy); }
+.breakdown-item__value.included { color: var(--text-light); font-size: 0.8rem; font-weight: 400; }
+
+.result-note {
+  font-size: 0.78rem;
+  color: var(--text-light);
+  text-align: center;
+  padding: 16px;
+  background: var(--cream);
+  border-radius: 4px;
+  line-height: 1.7;
+  margin-bottom: 28px;
+}
+.wizard-result__cta { text-align: center; padding-bottom: 40px; }
+.restart-btn {
+  background: none;
+  border: none;
+  color: var(--text-light);
+  font-size: 0.82rem;
+  cursor: pointer;
+  margin-top: 12px;
+  text-decoration: underline;
+  display: block;
+  margin: 12px auto 0;
+}
+
+@media (max-width: 900px) {
+  .simulator__inner { grid-template-columns: 1fr; }
+}
+@media (max-width: 600px) {
+  .tab-btn { padding: 14px 20px; font-size: 0.85rem; }
+  .sim-form, .sim-result { padding: 24px; }
+  .wizard-header, .wizard-body, .wizard-footer, .wizard-result { padding-left: 24px; padding-right: 24px; }
+  .options-grid { grid-template-columns: 1fr 1fr; }
+  .options-grid--3 { grid-template-columns: repeat(2, 1fr); }
+}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<header class="nav nav--scrolled" id="nav">
+  <div class="nav__inner">
+    <a href="index.html" class="nav__logo">
+      <span class="nav__logo-en">TACHIBANA</span>
+      <span class="nav__logo-jp">橘総合税務会計事務所</span>
+    </a>
+    <nav class="nav__links">
+      <a href="index.html#services">サービス</a>
+      <a href="index.html#reasons">選ばれる理由</a>
+      <a href="index.html#profile">代表紹介</a>
+      <a href="tools.html" style="color:var(--gold-light)">無料ツール</a>
+      <a href="index.html#contact" class="nav__cta">無料相談</a>
+    </nav>
+  </div>
+</header>
+
+<!-- HERO -->
+<section class="tools-hero">
+  <p class="kicker">Free Tools</p>
+  <h1 class="tools-hero__title">あなたの節税ポテンシャルを<br>今すぐ確認する</h1>
+  <p class="tools-hero__desc">2つの無料ツールで、税負担の現状把握と最適な顧問プランをシミュレーションできます。</p>
+</section>
+
+<!-- TABS -->
+<div class="tab-nav">
+  <button class="tab-btn active" data-tab="simulator">
+    <span>📊</span> 節税シミュレーター
+  </button>
+  <button class="tab-btn" data-tab="wizard">
+    <span>💼</span> 顧問料見積もり
+  </button>
+</div>
+
+<!-- ===== TAB 1: SIMULATOR ===== -->
+<div class="tab-panel active" id="tab-simulator">
+<section class="simulator">
+  <div class="container">
+    <div class="simulator__inner">
+
+      <!-- Form -->
+      <div class="sim-form">
+        <h2 class="sim-form__title">条件を入力してください</h2>
+
+        <!-- Entity -->
+        <div style="margin-bottom:20px;">
+          <p style="font-size:.85rem;color:var(--text-light);margin-bottom:10px;">事業形態</p>
+          <div class="entity-toggle" id="entityToggle">
+            <button class="entity-btn active" data-entity="individual">個人事業主</button>
+            <button class="entity-btn" data-entity="corporate">法人（中小）</button>
+          </div>
+        </div>
+
+        <!-- Revenue slider -->
+        <div class="slider-group">
+          <div class="slider-group__header">
+            <label class="slider-group__label">年間売上</label>
+            <span class="slider-group__value" id="revenueDisplay">1,200<span>万円</span></span>
+          </div>
+          <input type="range" id="revenueSlider" min="100" max="10000" step="100" value="1200">
+        </div>
+
+        <!-- Expense slider -->
+        <div class="slider-group">
+          <div class="slider-group__header">
+            <label class="slider-group__label">年間経費（自己申告）</label>
+            <span class="slider-group__value" id="expenseDisplay">500<span>万円</span></span>
+          </div>
+          <input type="range" id="expenseSlider" min="0" max="8000" step="50" value="500">
+        </div>
+
+        <!-- Family -->
+        <div style="margin-bottom:24px;">
+          <p style="font-size:.85rem;color:var(--text-light);margin-bottom:12px;">家族構成</p>
+          <div class="family-row">
+            <span class="family-row__label">配偶者（控除対象）</span>
+            <div class="counter">
+              <button class="counter__btn" id="spouseDown">−</button>
+              <span class="counter__val" id="spouseVal">0</span>
+              <button class="counter__btn" id="spouseUp">＋</button>
+            </div>
+          </div>
+          <div class="family-row">
+            <span class="family-row__label">扶養家族（16歳以上）</span>
+            <div class="counter">
+              <button class="counter__btn" id="depDown">−</button>
+              <span class="counter__val" id="depVal">0</span>
+              <button class="counter__btn" id="depUp">＋</button>
+            </div>
+          </div>
+        </div>
+
+        <button class="sim-run-btn" id="simRunBtn">
+          節税効果を計算する →
+        </button>
+      </div>
+
+      <!-- Result -->
+      <div class="sim-result" id="simResult">
+        <div class="sim-result__placeholder" id="simPlaceholder">
+          <div class="sim-result__placeholder-icon">📊</div>
+          <p>左のフォームに条件を入力して<br>「計算する」を押してください</p>
+        </div>
+        <div id="simOutput" style="display:none">
+          <!-- savings banner -->
+          <div class="savings-banner" id="savingsBanner">
+            <p class="savings-banner__label">推定年間節税効果</p>
+            <div class="savings-banner__amount"><span>約</span><span id="savingsAmount">0</span>万円</div>
+            <p class="savings-banner__sub">顧問契約後の試算値です</p>
+          </div>
+          <!-- chart -->
+          <div class="chart-area">
+            <canvas id="taxChart"></canvas>
+          </div>
+          <!-- table -->
+          <table class="compare-table">
+            <thead>
+              <tr>
+                <th>内訳</th>
+                <th>現在</th>
+                <th>顧問後</th>
+                <th>削減額</th>
+              </tr>
+            </thead>
+            <tbody id="compareTableBody"></tbody>
+          </table>
+          <p class="sim-note">
+            ※ 本シミュレーターは概算を示すものです。青色申告特別控除・経費最適化・小規模企業共済等の一般的な節税手法を適用した試算値です。実際の節税効果は個別の状況により異なります。正確な試算は無料相談にてご確認ください。
+          </p>
+          <div class="sim-cta">
+            <a href="index.html#contact" class="btn btn--primary">無料相談で詳しく確認する</a>
+            <p style="font-size:.8rem;color:var(--text-light);margin-top:12px;">初回60分・完全無料</p>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- ===== TAB 2: WIZARD ===== -->
+<div class="tab-panel" id="tab-wizard">
+<section class="wizard">
+  <div class="container">
+    <div class="wizard__inner">
+      <div class="wizard-card" id="wizardCard">
+
+        <div class="wizard-progress">
+          <div class="wizard-progress__fill" id="wizardProgress" style="width:0%"></div>
+        </div>
+
+        <!-- Step 1 -->
+        <div id="step1" class="wizard-step">
+          <div class="wizard-header">
+            <p class="wizard-step-label">Step 01 / 03</p>
+            <h2 class="wizard-title">事業形態を教えてください</h2>
+            <p class="wizard-desc">現在のご状況に合わせてお選びください</p>
+          </div>
+          <div class="wizard-body">
+            <div class="options-grid">
+              <div class="option-card" data-step="1" data-val="individual">
+                <div class="option-card__icon">👤</div>
+                <div class="option-card__label">個人事業主</div>
+                <div class="option-card__sub">フリーランス・自営業</div>
+              </div>
+              <div class="option-card" data-step="1" data-val="corporate">
+                <div class="option-card__icon">🏢</div>
+                <div class="option-card__label">法人（会社）</div>
+                <div class="option-card__sub">株式会社・合同会社など</div>
+              </div>
+              <div class="option-card" data-step="1" data-val="startup">
+                <div class="option-card__icon">🚀</div>
+                <div class="option-card__label">これから起業</div>
+                <div class="option-card__sub">法人設立・開業予定</div>
+              </div>
+              <div class="option-card" data-step="1" data-val="inheritance">
+                <div class="option-card__icon">🏛️</div>
+                <div class="option-card__label">相続・資産管理</div>
+                <div class="option-card__sub">事業外の税務サポート</div>
+              </div>
+            </div>
+          </div>
+          <div class="wizard-footer">
+            <div class="step-dots">
+              <div class="step-dot active"></div>
+              <div class="step-dot"></div>
+              <div class="step-dot"></div>
+            </div>
+            <button class="btn-next" id="next1" disabled>次へ →</button>
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div id="step2" class="wizard-step" style="display:none">
+          <div class="wizard-header">
+            <p class="wizard-step-label">Step 02 / 03</p>
+            <h2 class="wizard-title">年間売上規模を教えてください</h2>
+            <p class="wizard-desc">おおよその規模で構いません</p>
+          </div>
+          <div class="wizard-body">
+            <div class="options-grid options-grid--3">
+              <div class="option-card" data-step="2" data-val="s300">
+                <div class="option-card__icon">💰</div>
+                <div class="option-card__label">〜300万円</div>
+                <div class="option-card__sub">副業・小規模</div>
+              </div>
+              <div class="option-card" data-step="2" data-val="s1000">
+                <div class="option-card__icon">💰💰</div>
+                <div class="option-card__label">300〜1,000万</div>
+                <div class="option-card__sub">中小規模</div>
+              </div>
+              <div class="option-card" data-step="2" data-val="s3000">
+                <div class="option-card__icon">💰💰💰</div>
+                <div class="option-card__label">1,000〜3,000万</div>
+                <div class="option-card__sub">成長期</div>
+              </div>
+              <div class="option-card" data-step="2" data-val="s5000">
+                <div class="option-card__icon">📈</div>
+                <div class="option-card__label">3,000〜5,000万</div>
+                <div class="option-card__sub">中堅企業</div>
+              </div>
+              <div class="option-card" data-step="2" data-val="smore">
+                <div class="option-card__icon">🏆</div>
+                <div class="option-card__label">5,000万円〜</div>
+                <div class="option-card__sub">大規模</div>
+              </div>
+              <div class="option-card" data-step="2" data-val="snone">
+                <div class="option-card__icon">🤔</div>
+                <div class="option-card__label">まだわからない</div>
+                <div class="option-card__sub">起業前・相続など</div>
+              </div>
+            </div>
+          </div>
+          <div class="wizard-footer">
+            <div class="step-dots">
+              <div class="step-dot done"></div>
+              <div class="step-dot active"></div>
+              <div class="step-dot"></div>
+            </div>
+            <div style="display:flex;gap:12px;">
+              <button class="btn-back" id="back2">← 戻る</button>
+              <button class="btn-next" id="next2" disabled>次へ →</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div id="step3" class="wizard-step" style="display:none">
+          <div class="wizard-header">
+            <p class="wizard-step-label">Step 03 / 03</p>
+            <h2 class="wizard-title">従業員数を教えてください</h2>
+            <p class="wizard-desc">社労士サポートの有無に影響します</p>
+          </div>
+          <div class="wizard-body">
+            <div class="options-grid">
+              <div class="option-card" data-step="3" data-val="e0">
+                <div class="option-card__icon">🧑‍💻</div>
+                <div class="option-card__label">0人（本人のみ）</div>
+                <div class="option-card__sub">ひとり事業</div>
+              </div>
+              <div class="option-card" data-step="3" data-val="e5">
+                <div class="option-card__icon">👥</div>
+                <div class="option-card__label">1〜5人</div>
+                <div class="option-card__sub">小チーム</div>
+              </div>
+              <div class="option-card" data-step="3" data-val="e10">
+                <div class="option-card__icon">👨‍👩‍👧‍👦</div>
+                <div class="option-card__label">6〜10人</div>
+                <div class="option-card__sub">中規模チーム</div>
+              </div>
+              <div class="option-card" data-step="3" data-val="emore">
+                <div class="option-card__icon">🏢</div>
+                <div class="option-card__label">11人以上</div>
+                <div class="option-card__sub">組織化が必要</div>
+              </div>
+            </div>
+          </div>
+          <div class="wizard-footer">
+            <div class="step-dots">
+              <div class="step-dot done"></div>
+              <div class="step-dot done"></div>
+              <div class="step-dot active"></div>
+            </div>
+            <div style="display:flex;gap:12px;">
+              <button class="btn-back" id="back3">← 戻る</button>
+              <button class="btn-next" id="calcBtn" disabled>見積もりを見る ✓</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Result -->
+        <div id="stepResult" class="wizard-step" style="display:none">
+          <div class="wizard-progress" style="position:static">
+            <div style="height:4px;background:var(--gold);width:100%"></div>
+          </div>
+          <div class="wizard-result">
+            <div class="wizard-result__top">
+              <div class="wizard-result__badge" id="resultBadge">個人事業主 / 中小規模 / ひとり</div>
+              <div class="wizard-result__amount" id="resultAmount">3<span style="font-size:1.2rem">万円〜</span></div>
+              <div class="wizard-result__amount-sub">推定月額顧問料（税別）</div>
+              <a href="index.html#contact" class="btn btn--primary" style="margin-top:16px;display:inline-flex">この内容で無料相談する</a>
+            </div>
+            <div class="wizard-result__breakdown" id="resultBreakdown"></div>
+            <p class="result-note">※ 上記は概算です。実際の料金は初回無料相談にてご提案します。<br>複合プランや年間一括払い割引なども対応可能です。</p>
+            <div class="wizard-result__cta">
+              <a href="index.html#contact" class="btn btn--primary">詳細を無料相談で確認する</a>
+              <button class="restart-btn" id="restartBtn">← もう一度試す</button>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /wizard-card -->
+    </div>
+  </div>
+</section>
+</div>
+
+<!-- Footer (simplified) -->
+<footer class="footer" style="margin-top:0">
+  <div class="container">
+    <div class="footer__bottom" style="border-top:1px solid rgba(255,255,255,0.08);padding-top:24px">
+      <p>&copy; 2024 橘総合税務会計事務所</p>
+      <a href="index.html" style="font-size:.82rem;color:rgba(255,255,255,.5)">← サイトトップに戻る</a>
+    </div>
+  </div>
+</footer>
+
+<script>
+// ===========================
+// TAB SWITCH
+// ===========================
+document.querySelectorAll('.tab-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+  });
+});
+
+// ===========================
+// NAV SCROLL
+// ===========================
+window.addEventListener('scroll', () => {
+  document.getElementById('nav').classList.toggle('nav--scrolled', window.scrollY > 10);
+});
+
+// ===========================
+// SIMULATOR
+// ===========================
+let entityType = 'individual';
+let spouseCount = 0;
+let depCount = 0;
+let taxChartInstance = null;
+
+// Entity toggle
+document.querySelectorAll('.entity-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.entity-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    entityType = btn.dataset.entity;
+  });
+});
+
+// Sliders
+function updateSlider(slider, displayId, unit = '万円') {
+  const val = parseInt(slider.value);
+  const pct = ((val - slider.min) / (slider.max - slider.min)) * 100;
+  slider.style.setProperty('--pct', pct + '%');
+  document.getElementById(displayId).innerHTML = val.toLocaleString() + `<span>${unit}</span>`;
+}
+
+const revenueSlider = document.getElementById('revenueSlider');
+const expenseSlider = document.getElementById('expenseSlider');
+revenueSlider.addEventListener('input', () => updateSlider(revenueSlider, 'revenueDisplay'));
+expenseSlider.addEventListener('input', () => updateSlider(expenseSlider, 'expenseDisplay'));
+updateSlider(revenueSlider, 'revenueDisplay');
+updateSlider(expenseSlider, 'expenseDisplay');
+
+// Counters
+function setupCounter(upId, downId, valId, varRef, min, max, setter) {
+  document.getElementById(upId).addEventListener('click', () => {
+    if (window[varRef] < max) { window[varRef]++; document.getElementById(valId).textContent = window[varRef]; }
+  });
+  document.getElementById(downId).addEventListener('click', () => {
+    if (window[varRef] > min) { window[varRef]--; document.getElementById(valId).textContent = window[varRef]; }
+  });
+}
+window.spouseCount = 0;
+window.depCount = 0;
+document.getElementById('spouseUp').addEventListener('click', () => { if(window.spouseCount<1){window.spouseCount++;document.getElementById('spouseVal').textContent=window.spouseCount;} });
+document.getElementById('spouseDown').addEventListener('click', () => { if(window.spouseCount>0){window.spouseCount--;document.getElementById('spouseVal').textContent=window.spouseCount;} });
+document.getElementById('depUp').addEventListener('click', () => { if(window.depCount<5){window.depCount++;document.getElementById('depVal').textContent=window.depCount;} });
+document.getElementById('depDown').addEventListener('click', () => { if(window.depCount>0){window.depCount--;document.getElementById('depVal').textContent=window.depCount;} });
+
+// Tax calculation
+function calcIncomeTax(taxableIncome) {
+  if (taxableIncome <= 0) return 0;
+  const brackets = [
+    [1950000, 0.05, 0],
+    [3300000, 0.10, 97500],
+    [6950000, 0.20, 427500],
+    [9000000, 0.23, 636000],
+    [18000000, 0.33, 1536000],
+    [40000000, 0.40, 2796000],
+    [Infinity, 0.45, 4796000]
+  ];
+  for (const [limit, rate, ded] of brackets) {
+    if (taxableIncome <= limit) return Math.max(0, taxableIncome * rate - ded);
+  }
+  return 0;
+}
+
+function calcCorpTax(profit) {
+  if (profit <= 0) return 0;
+  // 中小法人: 800万以下は15%、超過は23.2%
+  if (profit <= 8000000) return profit * 0.15;
+  return 8000000 * 0.15 + (profit - 8000000) * 0.232;
+}
+
+function runSimulation() {
+  const revenue = parseInt(revenueSlider.value) * 10000;
+  const expenses = parseInt(expenseSlider.value) * 10000;
+  const hasSpouse = window.spouseCount > 0;
+  const deps = window.depCount;
+
+  if (revenue <= expenses) {
+    alert('売上が経費以下のため計算できません。経費を調整してください。');
+    return;
+  }
+
+  let nowTotal, afterTotal, nowDetail, afterDetail;
+
+  if (entityType === 'individual') {
+    // 個人事業主
+    const kisoKojo = 480000;
+    const spouseKojo = hasSpouse ? 380000 : 0;
+    const fuyo = deps * 380000;
+
+    const income_now = revenue - expenses;
+    const taxable_now = Math.max(0, income_now - kisoKojo - spouseKojo - fuyo);
+    const shotokuzei_now = calcIncomeTax(taxable_now);
+    const juminzei_now = taxable_now * 0.1;
+    const jigyozei_now = Math.max(0, (taxable_now - 2900000) * 0.05);
+    nowTotal = shotokuzei_now + juminzei_now + jigyozei_now;
+    nowDetail = { '所得税': shotokuzei_now, '住民税': juminzei_now, '事業税': jigyozei_now };
+
+    // 顧問後
+    const aokiro = 650000;
+    const addExpense = expenses * 0.12;
+    const kyosai = Math.min(840000, income_now * 0.08);
+    const income_after = revenue - expenses - addExpense;
+    const taxable_after = Math.max(0, income_after - kisoKojo - spouseKojo - fuyo - aokiro - kyosai);
+    const shotokuzei_after = calcIncomeTax(taxable_after);
+    const juminzei_after = taxable_after * 0.1;
+    const jigyozei_after = Math.max(0, (taxable_after - 2900000) * 0.05);
+    afterTotal = shotokuzei_after + juminzei_after + jigyozei_after;
+    afterDetail = { '所得税': shotokuzei_after, '住民税': juminzei_after, '事業税': jigyozei_after };
+
+  } else {
+    // 法人
+    const profit_now = revenue - expenses;
+    const corptax_now = calcCorpTax(profit_now);
+    const juminwarari_now = corptax_now * 0.207; // 法人住民税(概算)
+    nowTotal = corptax_now + juminwarari_now;
+    nowDetail = { '法人税': corptax_now, '法人住民税': juminwarari_now };
+
+    // 顧問後: 役員報酬最適化・経費追加計上
+    const addExpense_c = expenses * 0.10;
+    const yakuinHoshu = Math.min(revenue * 0.25, 8000000); // 役員報酬
+    const profit_after = Math.max(0, revenue - expenses - addExpense_c - yakuinHoshu * 0.3);
+    const corptax_after = calcCorpTax(profit_after);
+    const juminwarari_after = corptax_after * 0.207;
+    afterTotal = corptax_after + juminwarari_after;
+    afterDetail = { '法人税': corptax_after, '法人住民税': juminwarari_after };
+  }
+
+  const savings = Math.max(0, nowTotal - afterTotal);
+  const savingsMan = Math.round(savings / 10000);
+
+  // Update banner
+  document.getElementById('savingsAmount').textContent = savingsMan.toLocaleString();
+
+  // Update table
+  const tbody = document.getElementById('compareTableBody');
+  const allKeys = Object.keys({ ...nowDetail, ...afterDetail });
+  tbody.innerHTML = allKeys.map(k => {
+    const n = nowDetail[k] || 0;
+    const a = afterDetail[k] || 0;
+    const d = n - a;
+    return `<tr>
+      <td>${k}</td>
+      <td>${Math.round(n/10000).toLocaleString()}万円</td>
+      <td class="after">${Math.round(a/10000).toLocaleString()}万円</td>
+      <td class="diff">${d > 0 ? '▼ ' + Math.round(d/10000).toLocaleString() + '万円' : '−'}</td>
+    </tr>`;
+  }).join('') + `<tr>
+    <td>合計</td>
+    <td>${Math.round(nowTotal/10000).toLocaleString()}万円</td>
+    <td class="after">${Math.round(afterTotal/10000).toLocaleString()}万円</td>
+    <td class="diff">▼ ${savingsMan.toLocaleString()}万円</td>
+  </tr>`;
+
+  // Chart
+  if (taxChartInstance) taxChartInstance.destroy();
+  const ctx = document.getElementById('taxChart').getContext('2d');
+  taxChartInstance = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: ['現在の税額', '顧問後の推定税額'],
+      datasets: [{
+        data: [Math.round(nowTotal/10000), Math.round(afterTotal/10000)],
+        backgroundColor: ['rgba(26,39,68,0.7)', 'rgba(184,150,12,0.8)'],
+        borderColor: ['rgb(26,39,68)', 'rgb(184,150,12)'],
+        borderWidth: 2,
+        borderRadius: 4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          callbacks: {
+            label: ctx => ` ${ctx.parsed.y.toLocaleString()}万円`
+          }
+        }
+      },
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            callback: v => v + '万円',
+            font: { size: 11 }
+          },
+          grid: { color: 'rgba(0,0,0,0.06)' }
+        },
+        x: { grid: { display: false }, ticks: { font: { size: 12 } } }
+      }
+    }
+  });
+
+  // Show result
+  document.getElementById('simPlaceholder').style.display = 'none';
+  document.getElementById('simOutput').style.display = 'block';
+}
+
+document.getElementById('simRunBtn').addEventListener('click', runSimulation);
+
+// ===========================
+// WIZARD
+// ===========================
+let wAnswers = { entity: null, revenue: null, employees: null };
+
+function updateProgress(pct) {
+  document.getElementById('wizardProgress').style.width = pct + '%';
+}
+
+function showStep(id) {
+  document.querySelectorAll('.wizard-step').forEach(s => s.style.display = 'none');
+  document.getElementById(id).style.display = 'block';
+}
+
+// Option card selection
+document.querySelectorAll('.option-card').forEach(card => {
+  card.addEventListener('click', () => {
+    const step = card.dataset.step;
+    document.querySelectorAll(`.option-card[data-step="${step}"]`).forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    if (step === '1') { wAnswers.entity = card.dataset.val; document.getElementById('next1').disabled = false; }
+    if (step === '2') { wAnswers.revenue = card.dataset.val; document.getElementById('next2').disabled = false; }
+    if (step === '3') { wAnswers.employees = card.dataset.val; document.getElementById('calcBtn').disabled = false; }
+  });
+});
+
+document.getElementById('next1').addEventListener('click', () => { updateProgress(33); showStep('step2'); });
+document.getElementById('back2').addEventListener('click', () => { updateProgress(0); showStep('step1'); });
+document.getElementById('next2').addEventListener('click', () => { updateProgress(66); showStep('step3'); });
+document.getElementById('back3').addEventListener('click', () => { updateProgress(33); showStep('step2'); });
+document.getElementById('calcBtn').addEventListener('click', calcWizard);
+document.getElementById('restartBtn').addEventListener('click', () => {
+  wAnswers = { entity: null, revenue: null, employees: null };
+  document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+  ['next1','next2','calcBtn'].forEach(id => document.getElementById(id).disabled = true);
+  updateProgress(0);
+  showStep('step1');
+});
+
+function calcWizard() {
+  updateProgress(100);
+
+  // Base prices (万円/月)
+  const entityBase = { individual: 3, corporate: 4.5, startup: 3.5, inheritance: 2.5 };
+  const revenueAdd = { s300: 0, s1000: 1, s3000: 2, s5000: 3.5, smore: 5, snone: 0 };
+  const employeeAdd = { e0: 0, e5: 1.5, e10: 2.5, emore: 4 };
+
+  const base = entityBase[wAnswers.entity] || 3;
+  const rev = revenueAdd[wAnswers.revenue] || 0;
+  const emp = employeeAdd[wAnswers.employees] || 0;
+  const total = base + rev + emp;
+
+  const entityLabels = { individual: '個人事業主', corporate: '法人', startup: '創業支援', inheritance: '相続・資産管理' };
+  const revLabels = { s300: '〜300万', s1000: '300〜1,000万', s3000: '1,000〜3,000万', s5000: '3,000〜5,000万', smore: '5,000万〜', snone: '未定' };
+  const empLabels = { e0: '本人のみ', e5: '1〜5人', e10: '6〜10人', emore: '11人以上' };
+
+  document.getElementById('resultBadge').textContent =
+    `${entityLabels[wAnswers.entity]} / ${revLabels[wAnswers.revenue]} / ${empLabels[wAnswers.employees]}`;
+  document.getElementById('resultAmount').innerHTML = `${total}<span style="font-size:1.2rem">万円〜</span>`;
+
+  const breakdown = [
+    { label: '基本顧問料（税務・記帳）', value: base + '万円〜 / 月' },
+    { label: '売上規模による加算', value: rev > 0 ? '+' + rev + '万円 / 月' : '加算なし', included: rev === 0 },
+    { label: '労務・社会保険サポート', value: emp > 0 ? '+' + emp + '万円 / 月' : '含まない', included: emp === 0 },
+    { label: '月次面談・年次決算', value: '顧問料に含む', included: true },
+    { label: '税務調査立会い', value: '顧問先割引あり', included: true },
+  ];
+
+  document.getElementById('resultBreakdown').innerHTML = breakdown.map(b => `
+    <div class="breakdown-item">
+      <span class="breakdown-item__label">${b.label}</span>
+      <span class="breakdown-item__value${b.included ? ' included' : ''}">${b.value}</span>
+    </div>
+  `).join('');
+
+  showStep('stepResult');
+}
+</script>
+
+</body>
+</html>
